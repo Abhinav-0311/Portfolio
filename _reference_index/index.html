@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Abhinav Jain | Portfolio</title>
+    <meta
+      name="description"
+      content="Minimal, modern portfolio website for Abhinav Jain with dynamic interactions and Vercel-ready deployment."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="scroll-progress" aria-hidden="true">
+      <span id="scroll-progress-bar"></span>
+    </div>
+
+    <div class="page-shell" id="top">
+      <div class="spotlight" aria-hidden="true"></div>
+
+      <header class="site-header">
+        <a class="brand" href="#top">
+          <span class="brand-mark"></span>
+          <span>Abhinav Jain</span>
+        </a>
+
+        <nav class="site-nav" aria-label="Primary">
+          <a href="#about">About</a>
+          <a href="#focus">Focus</a>
+          <a href="#projects">Projects</a>
+          <a href="#journey">Journey</a>
+          <a href="#contact">Contact</a>
+        </nav>
+
+        <div class="status-pill">
+          <span class="status-dot"></span>
+          <span>Portfolio in progress</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero section">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">Modern Portfolio</p>
+            <h1>
+              Clean visuals.
+              <span class="headline-accent">Dynamic motion.</span>
+              <span id="rotating-line">Thoughtful presentation.</span>
+            </h1>
+            <p class="hero-text">
+              A minimal portfolio for Abhinav Jain with a sharper visual identity, lighter layout,
+              and subtle motion that helps the site feel current without overwhelming the content.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#projects">See Highlights</a>
+              <a
+                class="button button-secondary"
+                href="./assets/Abhinav-Jain-CV.pdf"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Download Resume
+              </a>
+            </div>
+          </div>
+
+          <aside class="hero-panel reveal">
+            <div class="hero-panel-top">
+              <p class="eyebrow">Live Notes</p>
+              <p class="mini-label">Designed to stay elegant on desktop and mobile.</p>
+            </div>
+
+            <div class="signal-list">
+              <article>
+                <span>01</span>
+                <div>
+                  <h2>Clean structure</h2>
+                  <p>Strong typography, generous spacing, and balanced section rhythm.</p>
+                </div>
+              </article>
+              <article>
+                <span>02</span>
+                <div>
+                  <h2>Modern motion</h2>
+                  <p>Scroll-aware progress, reveal timing, and soft interactive feedback.</p>
+                </div>
+              </article>
+              <article>
+                <span>03</span>
+                <div>
+                  <h2>Easy edits</h2>
+                  <p>Update the cards and timeline content from one simple JavaScript file.</p>
+                </div>
+              </article>
+            </div>
+          </aside>
+        </section>
+
+        <section class="section about-grid reveal" id="about">
+          <div class="about-heading">
+            <p class="eyebrow">About</p>
+            <h2>Minimal by design, personal by intention.</h2>
+          </div>
+          <div class="about-copy">
+            <p>
+              This version shifts the portfolio toward a cleaner, more contemporary aesthetic.
+              The goal is to create a site that feels premium, calm, and easy to remember.
+            </p>
+            <p>
+              Once we add your exact resume details, this can become a very strong personal brand
+              site for internships, opportunities, and direct outreach.
+            </p>
+          </div>
+        </section>
+
+        <section class="section" id="focus">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Focus</p>
+            <h2>What the site is built to communicate at a glance.</h2>
+          </div>
+          <div class="card-grid" id="focus-grid"></div>
+        </section>
+
+        <section class="section" id="projects">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Selected Work</p>
+            <h2>A layout that makes even placeholder projects feel intentional.</h2>
+          </div>
+          <div class="project-grid" id="project-grid"></div>
+        </section>
+
+        <section class="section" id="journey">
+          <div class="section-heading reveal">
+            <p class="eyebrow">Journey</p>
+            <h2>Education, internships, and milestones can slot in naturally here.</h2>
+          </div>
+          <div class="timeline" id="timeline"></div>
+        </section>
+
+        <section class="section contact-section reveal" id="contact">
+          <div class="contact-panel">
+            <div>
+              <p class="eyebrow">Contact</p>
+              <h2>Ready for your real links, projects, and story.</h2>
+              <p class="contact-note">
+                The resume is already attached to the site. When you're ready, we can swap in your
+                exact email, LinkedIn, GitHub, and real project details.
+              </p>
+            </div>
+            <div class="contact-actions">
+              <a
+                class="button button-primary"
+                href="./assets/Abhinav-Jain-CV.pdf"
+                target="_blank"
+                rel="noreferrer"
+              >
+                View Resume
+              </a>
+              <a class="button button-secondary" href="#top">Back to Top</a>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
