@@ -346,38 +346,34 @@ img {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-areas:
-    "toggle"
-    "stage";
+  grid-template-areas: "stage";
   max-width: 840px;
   justify-items: center;
 }
 
 .terminal-toggle {
-  grid-area: toggle;
   display: inline-flex;
-  min-height: 40px;
+  min-height: 36px;
   align-items: center;
   justify-content: center;
-  margin: 0 0 18px;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  background: var(--bg);
   color: var(--text);
   cursor: pointer;
-  padding: 0 16px;
+  padding: 0 14px;
   font: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  box-shadow: 0 14px 34px rgba(17, 24, 39, 0.06);
-  transition: background 180ms ease, color 180ms ease, transform 180ms ease, border-color 180ms ease;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: none;
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
 }
 
 .terminal-toggle:hover,
 .terminal-toggle:focus-visible {
   border-color: var(--text);
   outline: 0;
-  transform: translateY(-1px);
 }
 
 .terminal-toggle[aria-pressed="true"] {
@@ -471,8 +467,8 @@ img {
 }
 
 :root[data-theme="dark"] .terminal-toggle {
-  background: #101010;
-  box-shadow: none;
+  background: var(--card);
+  color: var(--text);
 }
 
 :root[data-theme="dark"] .terminal-toggle[aria-pressed="true"] {
@@ -1782,10 +1778,6 @@ body.modal-open .contact-section {
 /* ── Hero — staggered entrance for each element ──
    Each element animates in sequence from top to bottom.
    `animation-fill-mode: both` keeps opacity:0 before delay fires. */
-.hero .terminal-toggle {
-  animation: heroFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0ms both;
-}
-
 .hero .hero-avatar {
   animation: heroFadeUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) 80ms both;
 }
@@ -2130,7 +2122,6 @@ body.modal-open .contact-section {
 
 /* ── Reduced motion guard — disable all new animations ── */
 @media (prefers-reduced-motion: reduce) {
-  .hero .terminal-toggle,
   .hero .hero-avatar,
   .hero .hero-kicker,
   .hero h1,
@@ -2166,4 +2157,106 @@ body.modal-open .contact-section {
 :root[data-theme="dark"] ::selection {
   background: rgba(250, 250, 249, 0.18);
   color: inherit;
+}
+
+/* ── Snake Game ── */
+
+.snake-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+}
+
+.snake-controls {
+  position: absolute;
+  top: 12px;
+  left: 20px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.snake-toggle {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(250, 250, 249, 0.85);
+  color: var(--text);
+  cursor: pointer;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.06);
+  backdrop-filter: blur(12px);
+  transition: background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.snake-toggle:hover,
+.snake-toggle:focus-visible {
+  border-color: var(--text);
+  outline: 0;
+}
+
+.snake-toggle[aria-pressed="true"] {
+  background: var(--text);
+  color: var(--bg);
+  box-shadow: 0 2px 12px rgba(28, 25, 23, 0.12);
+}
+
+:root[data-theme="dark"] .snake-toggle {
+  background: rgba(13, 13, 13, 0.82);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .snake-toggle[aria-pressed="true"] {
+  background: #f9fafb;
+  color: #050505;
+}
+
+.snake-score-hud {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(250, 250, 249, 0.85);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: "Space Grotesk", Inter, ui-sans-serif, system-ui, sans-serif;
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .snake-score-hud {
+  background: rgba(13, 13, 13, 0.82);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.snake-hint {
+  color: var(--soft);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Hide snake on mobile */
+@media (max-width: 767px) {
+  .snake-controls,
+  .snake-canvas {
+    display: none !important;
+  }
 }

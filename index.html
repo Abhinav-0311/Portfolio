@@ -6,6 +6,22 @@
     <meta name="description" content="Portfolio of Abhinav Jain, a CSE student building games, AI tools, secure voting platforms, and practical software projects.">
     <title>Abhinav Jain | Creative Technologist</title>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+
+    <!-- Open Graph — social sharing previews (LinkedIn, Discord, WhatsApp, iMessage) -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Abhinav Jain | Creative Technologist">
+    <meta property="og:description" content="B.Tech CSE student building game systems, AI-assisted tools, and practical software experiences.">
+    <meta property="og:image" content="https://abhinavjain.dev/assets/og-image.png">
+    <meta property="og:url" content="https://abhinavjain.dev/">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Abhinav Jain | Creative Technologist">
+    <meta name="twitter:description" content="B.Tech CSE student building game systems, AI-assisted tools, and practical software experiences.">
+    <meta name="twitter:image" content="https://abhinavjain.dev/assets/og-image.png">
+
     <!-- Theme color for mobile browsers -->
     <meta name="theme-color" content="#fafaf9">
 
@@ -50,6 +66,7 @@
         <a href="#contact">Contact</a>
       </nav>
       <div class="nav-actions">
+        <button class="terminal-toggle" type="button" aria-pressed="false">Terminal View</button>
         <button class="theme-toggle" type="button" aria-label="Switch to dark theme" aria-pressed="false">
           <span class="theme-toggle-icon" aria-hidden="true">☾</span>
         </button>
@@ -63,8 +80,15 @@
         <div class="hero-blur hero-blur-one" aria-hidden="true"></div>
         <div class="hero-blur hero-blur-two" aria-hidden="true"></div>
         <div class="hero-blur hero-blur-three" aria-hidden="true"></div>
+        <canvas class="snake-canvas" id="snake-canvas" aria-hidden="true"></canvas>
+        <div class="snake-controls" id="snake-controls">
+          <button class="snake-toggle" id="snake-toggle" type="button" aria-pressed="false">🐍 Play Snake</button>
+          <div class="snake-score-hud" id="snake-score-hud" hidden>
+            <span id="snake-score">Score: 0</span>
+            <span class="snake-hint">← ↑ → ↓ to move · Space to pause</span>
+          </div>
+        </div>
         <div class="hero-copy">
-          <button class="terminal-toggle" type="button" aria-pressed="false">Terminal View</button>
           <div class="hero-view hero-view-normal">
             <img class="hero-avatar" src="assets/abhinav-profile.jpg" alt="Abhinav Jain">
             <p class="hero-kicker">Game Development · Agentic AI · Software Systems</p>
@@ -753,6 +777,277 @@ Open to internships and project work</code></pre>
       } else if (typeof systemThemeQuery.addListener === "function") {
         systemThemeQuery.addListener(syncSystemTheme);
       }
+      /* ── Snake Game ── */
+      (function() {
+        const CELL = 20;
+        const SPEED = 110;
+
+        const toggle = document.getElementById('snake-toggle');
+        const canvas = document.getElementById('snake-canvas');
+        const scoreHud = document.getElementById('snake-score-hud');
+        const scoreEl = document.getElementById('snake-score');
+        const hero = document.querySelector('.hero');
+        const ctx = canvas.getContext('2d');
+
+        let enabled = false;
+        let paused = false;
+        let loopId = null;
+        let cols, rows;
+        let snake, food, dir, nextDir, score;
+
+        function isMobile() {
+          return window.innerWidth < 768;
+        }
+
+        function sizeCanvas() {
+          const heroRect = hero.getBoundingClientRect();
+          canvas.width = heroRect.width;
+          canvas.height = heroRect.height;
+          cols = Math.floor(canvas.width / CELL);
+          rows = Math.floor(canvas.height / CELL);
+
+          // Compute playable row bounds — stop grid at hero-actions bottom
+          const heroActions = hero.querySelector('.hero-actions');
+          if (heroActions) {
+            const actionsRect = heroActions.getBoundingClientRect();
+            const bottomPx = actionsRect.bottom - heroRect.top + 20; // 20px breathing room
+            maxRow = Math.min(rows, Math.floor(bottomPx / CELL));
+          } else {
+            maxRow = rows;
+          }
+          minRow = Math.floor(60 / CELL); // skip top ~60px (navbar overlap area)
+
+          // Compute center exclusion zone from hero-copy bounds
+          const heroCopy = hero.querySelector('.hero-copy');
+          if (heroCopy) {
+            const copyRect = heroCopy.getBoundingClientRect();
+            exclusion = {
+              x1: Math.floor((copyRect.left - heroRect.left) / CELL) - 1,
+              y1: Math.floor((copyRect.top - heroRect.top) / CELL) - 1,
+              x2: Math.ceil((copyRect.right - heroRect.left) / CELL) + 1,
+              y2: Math.ceil((copyRect.bottom - heroRect.top) / CELL) + 1
+            };
+          } else {
+            exclusion = null;
+          }
+        }
+
+        let maxRow, minRow;
+        let exclusion = null;
+
+        function isInExclusion(x, y) {
+          if (!exclusion) return false;
+          return x >= exclusion.x1 && x <= exclusion.x2 &&
+                 y >= exclusion.y1 && y <= exclusion.y2;
+        }
+
+        function resetState() {
+          // Spawn snake in a safe area outside the center exclusion
+          let startX = 3;
+          let startY = minRow + 2;
+          snake = [{ x: startX + 2, y: startY }, { x: startX + 1, y: startY }, { x: startX, y: startY }];
+          dir = { x: 1, y: 0 };
+          nextDir = { x: 1, y: 0 };
+          score = 0;
+          paused = false;
+          spawnFood();
+          updateScore();
+        }
+
+        function spawnFood() {
+          let pos;
+          let attempts = 0;
+          do {
+            pos = {
+              x: Math.floor(Math.random() * cols),
+              y: minRow + Math.floor(Math.random() * (maxRow - minRow))
+            };
+            attempts++;
+            // Safety valve — if we can't find a spot in 200 tries, accept it
+            if (attempts > 200) break;
+          } while (
+            snake.some(s => s.x === pos.x && s.y === pos.y) ||
+            isInExclusion(pos.x, pos.y)
+          );
+          food = pos;
+        }
+
+        function updateScore() {
+          scoreEl.textContent = 'Score: ' + score;
+        }
+
+        function getColors() {
+          const style = getComputedStyle(document.documentElement);
+          const text = style.getPropertyValue('--text').trim() || '#1c1917';
+          const border = style.getPropertyValue('--border').trim() || '#e2dcd5';
+          return { text, border };
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          const { text, border } = getColors();
+
+          // Grid dots — only within playable bounds, skip exclusion zone
+          ctx.fillStyle = border;
+          for (let x = 0; x < cols; x++) {
+            for (let y = minRow; y < maxRow; y++) {
+              if (isInExclusion(x, y)) continue;
+              ctx.beginPath();
+              ctx.arc(x * CELL + CELL / 2, y * CELL + CELL / 2, 1, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // Snake body
+          snake.forEach((seg, i) => {
+            ctx.fillStyle = text;
+            ctx.globalAlpha = i === 0 ? 0.9 : 0.6 - (i / snake.length) * 0.3;
+            const sx = seg.x * CELL + 2;
+            const sy = seg.y * CELL + 2;
+            const sw = CELL - 4;
+            const sh = CELL - 4;
+            const sr = Math.min(sw, sh) / 2;
+            ctx.beginPath();
+            if (ctx.roundRect) {
+              ctx.roundRect(sx, sy, sw, sh, sr);
+            } else {
+              ctx.moveTo(sx + sr, sy);
+              ctx.arcTo(sx + sw, sy, sx + sw, sy + sh, sr);
+              ctx.arcTo(sx + sw, sy + sh, sx, sy + sh, sr);
+              ctx.arcTo(sx, sy + sh, sx, sy, sr);
+              ctx.arcTo(sx, sy, sx + sw, sy, sr);
+              ctx.closePath();
+            }
+            ctx.fill();
+          });
+          ctx.globalAlpha = 1;
+
+          // Food — bright and clearly visible
+          const fx = food.x * CELL + CELL / 2;
+          const fy = food.y * CELL + CELL / 2;
+          const fr = CELL / 2 - 2;
+          // Glow ring
+          ctx.fillStyle = 'rgba(224, 122, 95, 0.25)';
+          ctx.beginPath();
+          ctx.arc(fx, fy, fr + 5, 0, Math.PI * 2);
+          ctx.fill();
+          // Food body
+          ctx.fillStyle = '#e07a5f';
+          ctx.beginPath();
+          ctx.arc(fx, fy, fr, 0, Math.PI * 2);
+          ctx.fill();
+          // Shine dot
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.beginPath();
+          ctx.arc(fx - 2, fy - 2, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        function tick() {
+          if (paused) return;
+
+          dir = nextDir;
+          const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+          // Wall wrap within playable bounds
+          if (head.x < 0) head.x = cols - 1;
+          if (head.x >= cols) head.x = 0;
+          if (head.y < minRow) head.y = maxRow - 1;
+          if (head.y >= maxRow) head.y = minRow;
+
+          // Self collision → auto-reset
+          if (snake.some(s => s.x === head.x && s.y === head.y)) {
+            resetState();
+            draw();
+            return;
+          }
+
+          snake.unshift(head);
+
+          // Eat food
+          if (head.x === food.x && head.y === food.y) {
+            score++;
+            updateScore();
+            spawnFood();
+          } else {
+            snake.pop();
+          }
+
+          draw();
+        }
+
+        function enable() {
+          if (isMobile()) return;
+          enabled = true;
+          toggle.setAttribute('aria-pressed', 'true');
+          toggle.textContent = '🐍 Stop Snake';
+          sizeCanvas();
+          resetState();
+          canvas.style.opacity = '1';
+          scoreHud.hidden = false;
+          draw();
+          loopId = setInterval(tick, SPEED);
+        }
+
+        function disable() {
+          enabled = false;
+          toggle.setAttribute('aria-pressed', 'false');
+          toggle.textContent = '🐍 Play Snake';
+          clearInterval(loopId);
+          loopId = null;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          canvas.style.opacity = '0';
+          scoreHud.hidden = true;
+        }
+
+        toggle.addEventListener('click', () => {
+          if (isMobile()) return;
+          enabled ? disable() : enable();
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (!enabled) return;
+          const key = e.key;
+
+          if (key === ' ') {
+            e.preventDefault();
+            paused = !paused;
+            return;
+          }
+
+          const map = {
+            ArrowUp:    { x:  0, y: -1 },
+            ArrowDown:  { x:  0, y:  1 },
+            ArrowLeft:  { x: -1, y:  0 },
+            ArrowRight: { x:  1, y:  0 },
+            w: { x:  0, y: -1 },
+            s: { x:  0, y:  1 },
+            a: { x: -1, y:  0 },
+            d: { x:  1, y:  0 }
+          };
+
+          const nd = map[key];
+          if (!nd) return;
+          // Prevent reversing into self
+          if (nd.x === -dir.x && nd.y === -dir.y) return;
+          e.preventDefault();
+          nextDir = nd;
+        });
+
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+          if (!enabled) return;
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => {
+            if (isMobile()) { disable(); return; }
+            sizeCanvas();
+            // Clamp snake positions to new grid
+            snake = snake.map(s => ({ x: Math.min(s.x, cols - 1), y: Math.min(s.y, rows - 1) }));
+            if (food.x >= cols || food.y >= rows) spawnFood();
+            draw();
+          }, 150);
+        });
+      })();
     </script>
   </body>
 </html>
